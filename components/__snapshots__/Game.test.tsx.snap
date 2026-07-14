@@ -1,0 +1,367 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Game > matches shell snapshot 1`] = `
+<div
+  class="crt"
+>
+  <div
+    aria-hidden="true"
+    class="scanlines"
+  />
+  <button
+    class="mute-btn"
+    id="btn-mute"
+    title="Toggle sound"
+    type="button"
+  >
+    SFX: ON
+  </button>
+  <div
+    id="app"
+  >
+    <section
+      class="screen active"
+      id="screen-title"
+    >
+      <div
+        class="title-wrap"
+      >
+        <p
+          class="blink coin-insert"
+        >
+          ★ AMIGA DISK 1 ★
+        </p>
+        <h1
+          class="logo"
+        >
+          <span
+            class="logo-slug"
+          >
+            RAINBOW
+          </span>
+          <span
+            class="logo-arena"
+          >
+            SLUGS
+          </span>
+        </h1>
+        <p
+          class="tagline"
+        >
+          90s AMIGA · RAINBOW GARDEN RACE
+        </p>
+        <div
+          aria-hidden="true"
+          class="title-snails"
+        >
+          <div
+            class="pixel-snail s1"
+          />
+          <div
+            class="pixel-snail s2"
+          />
+          <div
+            class="pixel-snail s3"
+          />
+        </div>
+        <p
+          class="cast-line"
+        >
+          ZIPPY · GEORGE · BUNGLE · GEOFFREY · JANE · FREDDY
+        </p>
+        <button
+          class="btn btn-primary"
+          id="btn-start"
+        >
+          PRESS START
+        </button>
+        <p
+          class="hint"
+        >
+          2–6 local players · bet · watch the garden chaos
+        </p>
+      </div>
+    </section>
+    <section
+      class="screen"
+      id="screen-lobby"
+    >
+      <header
+        class="screen-header"
+      >
+        <h2>
+          PLAYER LOBBY
+        </h2>
+        <p
+          class="sub"
+        >
+          Each racer starts with 
+          <span
+            class="gold"
+          >
+            100
+          </span>
+           shells
+        </p>
+      </header>
+      <div
+        class="lobby-list"
+        id="lobby-list"
+      />
+      <div
+        class="lobby-actions"
+      >
+        <button
+          class="btn"
+          id="btn-add-player"
+        >
+          + ADD PLAYER
+        </button>
+        <button
+          class="btn btn-primary"
+          disabled=""
+          id="btn-to-betting"
+        >
+          GO TO BETTING →
+        </button>
+      </div>
+    </section>
+    <section
+      class="screen"
+      id="screen-betting"
+    >
+      <header
+        class="screen-header"
+      >
+        <h2>
+          PLACE YOUR BETS
+        </h2>
+        <p
+          class="sub"
+          id="betting-turn-label"
+        >
+          Player 1's turn
+        </p>
+      </header>
+      <div
+        class="betting-layout"
+      >
+        <div
+          class="snail-odds"
+          id="snail-odds"
+        />
+        <div
+          class="bet-panel"
+        >
+          <p
+            class="bet-player"
+            id="bet-player-name"
+          >
+            —
+          </p>
+          <p
+            class="bet-bank"
+            id="bet-bank"
+          >
+            Shells: 100
+          </p>
+          <label
+            class="field"
+          >
+            <span>
+              SNAIL
+            </span>
+            <select
+              id="bet-snail"
+            />
+          </label>
+          <label
+            class="field"
+          >
+            <span>
+              AMOUNT
+            </span>
+            <input
+              id="bet-amount"
+              min="1"
+              step="1"
+              type="number"
+              value="10"
+            />
+          </label>
+          <div
+            class="chip-row"
+          >
+            <button
+              class="chip"
+              data-amt="5"
+              type="button"
+            >
+              5
+            </button>
+            <button
+              class="chip"
+              data-amt="10"
+              type="button"
+            >
+              10
+            </button>
+            <button
+              class="chip"
+              data-amt="25"
+              type="button"
+            >
+              25
+            </button>
+            <button
+              class="chip"
+              data-amt="50"
+              type="button"
+            >
+              50
+            </button>
+            <button
+              class="chip"
+              data-amt="all"
+              type="button"
+            >
+              ALL IN
+            </button>
+          </div>
+          <button
+            class="btn btn-primary"
+            id="btn-lock-bet"
+          >
+            LOCK BET
+          </button>
+          <p
+            class="hint"
+            id="bet-hint"
+          >
+            Pick a snail. Odds pay if they finish 1st.
+          </p>
+        </div>
+      </div>
+      <div
+        class="bets-placed"
+        id="bets-placed"
+      />
+    </section>
+    <section
+      class="screen"
+      id="screen-race"
+    >
+      <header
+        class="race-hud"
+      >
+        <div
+          class="hud-left"
+        >
+          <span
+            class="hud-label"
+          >
+            LAP
+          </span>
+          <span
+            id="hud-progress"
+          >
+            0%
+          </span>
+        </div>
+        <div
+          class="hud-center"
+        >
+          <div
+            class="commentary-box"
+          >
+            <span
+              class="comm-label"
+            >
+              COMM
+            </span>
+            <span
+              class="hud-event"
+              id="hud-event"
+            >
+              READY…
+            </span>
+          </div>
+        </div>
+        <div
+          class="hud-right"
+        >
+          <span
+            class="hud-label"
+          >
+            TIME
+          </span>
+          <span
+            id="hud-time"
+          >
+            0.0s
+          </span>
+        </div>
+      </header>
+      <canvas
+        height="480"
+        id="race-canvas"
+        width="960"
+      />
+      <div
+        class="lane-legend"
+        id="lane-legend"
+      />
+    </section>
+    <section
+      class="screen"
+      id="screen-results"
+    >
+      <header
+        class="screen-header"
+      >
+        <h2>
+          RACE RESULTS
+        </h2>
+        <p
+          class="sub"
+          id="winner-banner"
+        >
+          —
+        </p>
+      </header>
+      <div
+        class="results-grid"
+      >
+        <div
+          class="podium"
+          id="podium"
+        />
+        <div
+          class="payouts"
+          id="payouts"
+        />
+      </div>
+      <div
+        class="standings"
+        id="standings"
+      />
+      <div
+        class="lobby-actions"
+      >
+        <button
+          class="btn btn-primary"
+          id="btn-rematch"
+        >
+          NEXT RACE
+        </button>
+        <button
+          class="btn"
+          id="btn-new-game"
+        >
+          NEW GAME
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
+`;
