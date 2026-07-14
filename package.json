@@ -1,0 +1,10 @@
+{
+  "name": "rainbowslugs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "90s Amiga rainbow snail race betting game for multiple players",
+  "scripts": {
+    "start": "npx --yes serve . -p 5173",
+    "dev": "npx --yes serve . -p 5173"
+  }
+}

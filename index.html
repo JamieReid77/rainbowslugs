@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RAINBOWSLUGS — Amiga Race</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="crt">
+      <div class="scanlines" aria-hidden="true"></div>
+      <button id="btn-mute" class="mute-btn" type="button" title="Toggle sound">
+        SFX: ON
+      </button>
+      <div id="app">
+        <!-- TITLE -->
+        <section id="screen-title" class="screen active">
+          <div class="title-wrap">
+            <p class="blink coin-insert">★ AMIGA DISK 1 ★</p>
+            <h1 class="logo">
+              <span class="logo-slug">RAINBOW</span
+              ><span class="logo-arena">SLUGS</span>
+            </h1>
+            <p class="tagline">90s AMIGA · RAINBOW GARDEN RACE</p>
+            <div class="title-snails" aria-hidden="true">
+              <div class="pixel-snail s1"></div>
+              <div class="pixel-snail s2"></div>
+              <div class="pixel-snail s3"></div>
+            </div>
+            <p class="cast-line">
+              ZIPPY · GEORGE · BUNGLE · GEOFFREY · JANE · FREDDY
+            </p>
+            <button id="btn-start" class="btn btn-primary">PRESS START</button>
+            <p class="hint">2–6 local players · bet · watch the garden chaos</p>
+          </div>
+        </section>
+
+        <!-- LOBBY -->
+        <section id="screen-lobby" class="screen">
+          <header class="screen-header">
+            <h2>PLAYER LOBBY</h2>
+            <p class="sub">
+              Each racer starts with <span class="gold">100</span> shells
+            </p>
+          </header>
+          <div class="lobby-list" id="lobby-list"></div>
+          <div class="lobby-actions">
+            <button id="btn-add-player" class="btn">+ ADD PLAYER</button>
+            <button id="btn-to-betting" class="btn btn-primary" disabled>
+              GO TO BETTING →
+            </button>
+          </div>
+        </section>
+
+        <!-- BETTING -->
+        <section id="screen-betting" class="screen">
+          <header class="screen-header">
+            <h2>PLACE YOUR BETS</h2>
+            <p class="sub" id="betting-turn-label">Player 1's turn</p>
+          </header>
+          <div class="betting-layout">
+            <div class="snail-odds" id="snail-odds"></div>
+            <div class="bet-panel">
+              <p class="bet-player" id="bet-player-name">—</p>
+              <p class="bet-bank" id="bet-bank">Shells: 100</p>
+              <label class="field">
+                <span>SNAIL</span>
+                <select id="bet-snail"></select>
+              </label>
+              <label class="field">
+                <span>AMOUNT</span>
+                <input
+                  id="bet-amount"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="10"
+                />
+              </label>
+              <div class="chip-row">
+                <button type="button" class="chip" data-amt="5">5</button>
+                <button type="button" class="chip" data-amt="10">10</button>
+                <button type="button" class="chip" data-amt="25">25</button>
+                <button type="button" class="chip" data-amt="50">50</button>
+                <button type="button" class="chip" data-amt="all">
+                  ALL IN
+                </button>
+              </div>
+              <button id="btn-lock-bet" class="btn btn-primary">
+                LOCK BET
+              </button>
+              <p class="hint" id="bet-hint">
+                Pick a snail. Odds pay if they finish 1st.
+              </p>
+            </div>
+          </div>
+          <div class="bets-placed" id="bets-placed"></div>
+        </section>
+
+        <!-- RACE -->
+        <section id="screen-race" class="screen">
+          <header class="race-hud">
+            <div class="hud-left">
+              <span class="hud-label">LAP</span>
+              <span id="hud-progress">0%</span>
+            </div>
+            <div class="hud-center">
+              <div class="commentary-box">
+                <span class="comm-label">COMM</span>
+                <span id="hud-event" class="hud-event">READY…</span>
+              </div>
+            </div>
+            <div class="hud-right">
+              <span class="hud-label">TIME</span>
+              <span id="hud-time">0.0s</span>
+            </div>
+          </header>
+          <canvas id="race-canvas" width="960" height="480"></canvas>
+          <div class="lane-legend" id="lane-legend"></div>
+        </section>
+
+        <!-- RESULTS -->
+        <section id="screen-results" class="screen">
+          <header class="screen-header">
+            <h2>RACE RESULTS</h2>
+            <p class="sub" id="winner-banner">—</p>
+          </header>
+          <div class="results-grid">
+            <div class="podium" id="podium"></div>
+            <div class="payouts" id="payouts"></div>
+          </div>
+          <div class="standings" id="standings"></div>
+          <div class="lobby-actions">
+            <button id="btn-rematch" class="btn btn-primary">NEXT RACE</button>
+            <button id="btn-new-game" class="btn">NEW GAME</button>
+          </div>
+        </section>
+      </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
