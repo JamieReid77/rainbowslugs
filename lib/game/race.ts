@@ -1,99 +1,91 @@
-import { OBSTACLE_TYPES, SNAILS, TRACK_LENGTH } from "./data.js";
+import {
+  OBSTACLE_TYPES,
+  SNAILS,
+  TRACK_LENGTH,
+  type SnailState,
+} from "./data";
 
-/**
- * @typedef {import('./data.js').Snail} Snail
- * @typedef {{
- *   id: string,
- *   name: string,
- *   color: string,
- *   body: string,
- *   shell: string,
- *   x: number,
- *   lane: number,
- *   baseSpeed: number,
- *   speed: number,
- *   state: import('./data.js').SnailState,
- *   stateTimer: number,
- *   bob: number,
- *   finished: boolean,
- *   finishTime: number | null,
- *   dnf: boolean,
- *   dnfReason: string,
- *   nextEventAt: number,
- * }} Racer
- */
+export interface Racer {
+  id: string;
+  name: string;
+  color: string;
+  body: string;
+  shell: string;
+  x: number;
+  lane: number;
+  baseSpeed: number;
+  speed: number;
+  state: SnailState;
+  stateTimer: number;
+  bob: number;
+  finished: boolean;
+  finishTime: number | null;
+  dnf: boolean;
+  dnfReason: string;
+  nextEventAt: number;
+}
 
-export class RaceEngine {
-  /**
-   * @param {HTMLCanvasElement} canvas
-   * @param {{
-   *   onEvent?: (msg: string, meta?: { kind?: string, sfx?: string | null, priority?: number }) => void,
-   *   onFinish?: (results: Racer[]) => void
-   * }} hooks
-   */
-  constructor(canvas, hooks = {}) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
-    this.hooks = hooks;
-    /** @type {Racer[]} */
-    this.racers = [];
-    this.cameraX = 0;
-    this.elapsed = 0;
-    this.running = false;
-    this.finished = false;
-    this.clouds = this._makeClouds();
-    this.flowers = this._makeFlowers();
-    this.obstacles = this._makeTrackObstacles();
-    this.copperOffset = 0;
-    this._raf = 0;
-    this._last = 0;
-    this._finishAnnounced = new Set();
-  }
+export interface RaceEventMeta {
+  kind?: string;
+  sfx?: string | null;
+  priority?: number;
+}
 
-  start() {
-    this.racers = SNAILS.map((s, i) => {
-      const base = 55 + Math.random() * 35 + (s.id === "zippy" ? 12 : 0);
-      return {
-        id: s.id,
-        name: s.name,
-        color: s.color,
-        body: s.body,
-        shell: s.shell,
-        x: 20 + Math.random() * 8,
-        lane: i,
-        baseSpeed: base,
-        speed: base * (0.85 + Math.random() * 0.3),
-        state: "idle",
-        stateTimer: 0,
-        bob: Math.random() * Math.PI * 2,
-        finished: false,
-        finishTime: null,
-        dnf: false,
-        dnfReason: "",
-        nextEventAt: 3.5 + Math.random() * 4 + i * 0.35,
-      };
-    });
-    this.cameraX = 0;
-    this.elapsed = 0;
-    this.running = true;
-    this.finished = false;
-    this._finishAnnounced = new Set();
-    this.obstacles = this._makeTrackObstacles();
-    this._last = performance.now();
-    this.hooks.onEvent?.("And they're OFF! What a colourful field today!", {
-      kind: "start",
-      sfx: null,
-      priority: 2,
-    });
-    this._loop();
-  }
+export interface RaceHooks {
+  onEvent?: (msg: string, meta?: RaceEventMeta) => void;
+  onFinish?: (results: Racer[]) => void;
+}
 
-  stop() {
-    this.running = false;
-    cancelAnimationFrame(this._raf);
-  }
+export interface RaceHandle {
+  start(): void;
+  stop(): void;
+  getProgress(): number;
+  readonly elapsed: number;
+  readonly finished: boolean;
+  readonly racers: Racer[];
+}
 
-  _makeClouds() {
+type Cloud = {
+  x: number;
+  y: number;
+  w: number;
+};
+
+type Flower = {
+  x: number;
+  y: number;
+  c: string;
+};
+
+type TrackObstacleKind = "salt" | "mud" | "lettuce" | "bird" | "nap";
+
+type TrackObstacle = {
+  x: number;
+  lane: number;
+  kind: TrackObstacleKind;
+  hit: boolean;
+};
+
+export function createRaceEngine(
+  canvas: HTMLCanvasElement,
+  hooks: RaceHooks = {},
+): RaceHandle {
+  const ctx = canvas.getContext("2d")!;
+
+  let racers: Racer[] = [];
+  let cameraX = 0;
+  let elapsed = 0;
+  let running = false;
+  let finished = false;
+  let clouds = makeClouds();
+  let flowers = makeFlowers();
+  let obstacles = makeTrackObstacles();
+  let copperOffset = 0;
+  let raf = 0;
+  let last = 0;
+  let finishAnnounced = new Set<string>();
+
+  function makeClouds(): Cloud[] {
     return Array.from({ length: 10 }, (_, i) => ({
       x: i * 280 + Math.random() * 120,
       y: 18 + Math.random() * 55,
@@ -101,7 +93,7 @@ export class RaceEngine {
     }));
   }
 
-  _makeFlowers() {
+  function makeFlowers(): Flower[] {
     return Array.from({ length: 48 }, () => ({
       x: Math.random() * (TRACK_LENGTH + 400),
       y: 0.55 + Math.random() * 0.35,
@@ -111,8 +103,14 @@ export class RaceEngine {
     }));
   }
 
-  _makeTrackObstacles() {
-    const kinds = ["salt", "mud", "lettuce", "bird", "nap"];
+  function makeTrackObstacles(): TrackObstacle[] {
+    const kinds: TrackObstacleKind[] = [
+      "salt",
+      "mud",
+      "lettuce",
+      "bird",
+      "nap",
+    ];
     return Array.from({ length: 12 }, () => ({
       x: 320 + Math.random() * (TRACK_LENGTH - 560),
       lane: (Math.random() * SNAILS.length) | 0,
@@ -121,24 +119,21 @@ export class RaceEngine {
     }));
   }
 
-  _loop = () => {
-    if (!this.running) return;
+  function loop(): void {
+    if (!running) return;
     const now = performance.now();
-    const dt = Math.min(0.05, (now - this._last) / 1000);
-    this._last = now;
-    this._update(dt);
-    this._draw();
-    this._raf = requestAnimationFrame(this._loop);
-  };
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    update(dt);
+    draw();
+    raf = requestAnimationFrame(loop);
+  }
 
-  /**
-   * @param {number} dt
-   */
-  _update(dt) {
-    this.elapsed += dt;
-    this.copperOffset += dt * 40;
+  function update(dt: number): void {
+    elapsed += dt;
+    copperOffset += dt * 40;
 
-    for (const r of this.racers) {
+    for (const r of racers) {
       if (r.finished || r.dnf) continue;
 
       r.bob += dt * 8;
@@ -149,16 +144,16 @@ export class RaceEngine {
         r.speed = r.baseSpeed * (0.9 + Math.random() * 0.25);
       }
 
-      if (this.elapsed >= r.nextEventAt && !r.dnf && !r.finished) {
-        this._triggerRandomEvent(r);
-        r.nextEventAt = this.elapsed + 4.5 + Math.random() * 5.5;
+      if (elapsed >= r.nextEventAt && !r.dnf && !r.finished) {
+        triggerRandomEvent(r);
+        r.nextEventAt = elapsed + 4.5 + Math.random() * 5.5;
       }
 
-      for (const ob of this.obstacles) {
+      for (const ob of obstacles) {
         if (ob.hit || ob.lane !== r.lane) continue;
         if (Math.abs(r.x - ob.x) < 18) {
           ob.hit = true;
-          this._applyObstacleByKind(r, ob.kind);
+          applyObstacleByKind(r, ob.kind);
         }
       }
 
@@ -175,16 +170,16 @@ export class RaceEngine {
       if (r.x >= TRACK_LENGTH) {
         r.x = TRACK_LENGTH;
         r.finished = true;
-        r.finishTime = this.elapsed;
+        r.finishTime = elapsed;
         r.speed = 0;
-        if (!this._finishAnnounced.has(r.id)) {
-          this._finishAnnounced.add(r.id);
-          const place = this.racers.filter((x) => x.finished).length;
+        if (!finishAnnounced.has(r.id)) {
+          finishAnnounced.add(r.id);
+          const place = racers.filter((x) => x.finished).length;
           const placeWord =
             ["first", "second", "third", "fourth", "fifth", "sixth"][
               place - 1
             ] || "home";
-          this.hooks.onEvent?.(
+          hooks.onEvent?.(
             `${r.name} crosses the line in ${placeWord} place!`,
             { kind: "finish", sfx: "finish", priority: place === 1 ? 3 : 2 },
           );
@@ -192,24 +187,24 @@ export class RaceEngine {
       }
     }
 
-    const active = this.racers.filter((r) => !r.dnf);
+    const active = racers.filter((r) => !r.dnf);
     const leadX = active.length
       ? Math.max(...active.map((r) => r.x))
       : TRACK_LENGTH;
-    const targetCam = Math.max(0, leadX - this.canvas.width * 0.35);
-    this.cameraX += (targetCam - this.cameraX) * Math.min(1, dt * 3);
+    const targetCam = Math.max(0, leadX - canvas.width * 0.35);
+    cameraX += (targetCam - cameraX) * Math.min(1, dt * 3);
 
-    const finishers = this.racers.filter((r) => r.finished);
+    const finishers = racers.filter((r) => r.finished);
     if (finishers.length >= 1) {
       const firstTime = Math.min(
         ...finishers.map((r) => r.finishTime ?? Infinity),
       );
-      for (const r of this.racers) {
-        if (!r.finished && !r.dnf && this.elapsed - firstTime > 14) {
+      for (const r of racers) {
+        if (!r.finished && !r.dnf && elapsed - firstTime > 14) {
           r.dnf = true;
           r.speed = 0;
           r.dnfReason = "didn't make it in time";
-          this.hooks.onEvent?.(
+          hooks.onEvent?.(
             `Time's up — ${r.name} didn't make it to the finish!`,
             { kind: "dnf", sfx: "dnf", priority: 2 },
           );
@@ -217,20 +212,17 @@ export class RaceEngine {
       }
     }
 
-    if (this.racers.every((r) => r.finished || r.dnf)) {
-      if (!this.finished) {
-        this.finished = true;
-        this.running = false;
-        const results = this._rank();
-        setTimeout(() => this.hooks.onFinish?.(results), 1400);
+    if (racers.every((r) => r.finished || r.dnf)) {
+      if (!finished) {
+        finished = true;
+        running = false;
+        const results = rank();
+        setTimeout(() => hooks.onFinish?.(results), 1400);
       }
     }
   }
 
-  /**
-   * @param {Racer} racer
-   */
-  _triggerRandomEvent(racer) {
+  function triggerRandomEvent(racer: Racer): void {
     const roll = Math.random();
     let acc = 0;
     const total = OBSTACLE_TYPES.reduce((s, t) => s + t.chance, 0);
@@ -240,7 +232,7 @@ export class RaceEngine {
         const result = type.apply(racer);
         if (result.message) {
           const priority = result.kind === "dnf" ? 2 : 1;
-          this.hooks.onEvent?.(result.message, {
+          hooks.onEvent?.(result.message, {
             kind: result.kind,
             sfx: result.sfx,
             priority,
@@ -251,17 +243,13 @@ export class RaceEngine {
     }
   }
 
-  /**
-   * @param {Racer} racer
-   * @param {string} kind
-   */
-  _applyObstacleByKind(racer, kind) {
+  function applyObstacleByKind(racer: Racer, kind: string): void {
     const type = OBSTACLE_TYPES.find((t) => t.id === kind);
     if (!type) return;
     const result = type.apply(racer);
     if (result.message) {
       const priority = result.kind === "dnf" ? 2 : 1;
-      this.hooks.onEvent?.(result.message, {
+      hooks.onEvent?.(result.message, {
         kind: result.kind,
         sfx: result.sfx,
         priority,
@@ -269,19 +257,18 @@ export class RaceEngine {
     }
   }
 
-  _rank() {
-    const finished = this.racers
+  function rank(): Racer[] {
+    const finishedRacers = racers
       .filter((r) => r.finished)
       .sort((a, b) => (a.finishTime ?? 0) - (b.finishTime ?? 0));
-    const dnfs = this.racers.filter((r) => r.dnf);
-    return [...finished, ...dnfs];
+    const dnfs = racers.filter((r) => r.dnf);
+    return [...finishedRacers, ...dnfs];
   }
 
-  _draw() {
-    const ctx = this.ctx;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    const cam = this.cameraX;
+  function draw(): void {
+    const w = canvas.width;
+    const h = canvas.height;
+    const cam = cameraX;
 
     // Layout: sky / verge / dirt lanes / label gutter (bottom lane fully visible)
     const labelGutter = 28;
@@ -295,7 +282,7 @@ export class RaceEngine {
 
     for (let y = 0; y < trackTop - 16; y += 4) {
       const t = y / Math.max(1, trackTop - 16);
-      const shift = Math.sin((y + this.copperOffset) * 0.04) * 0.08;
+      const shift = Math.sin((y + copperOffset) * 0.04) * 0.08;
       const r = Math.floor(40 + t * 80 + shift * 40);
       const g = Math.floor(80 + t * 100);
       const b = Math.floor(180 + t * 40);
@@ -303,12 +290,12 @@ export class RaceEngine {
       ctx.fillRect(0, y, w, 4);
     }
 
-    for (const c of this.clouds) {
+    for (const c of clouds) {
       const cx = ((c.x - cam * 0.25) % (w + 220)) - 110;
-      this._drawCloud(cx, Math.min(c.y, trackTop - 40), c.w);
+      drawCloud(cx, Math.min(c.y, trackTop - 40), c.w);
     }
 
-    this._drawHills(cam, trackTop);
+    drawHills(cam, trackTop);
 
     const vergeTop = trackTop - 16;
     for (let x = 0; x < w; x += 16) {
@@ -334,7 +321,7 @@ export class RaceEngine {
     ctx.fillStyle = "#5c3d0e";
     ctx.fillRect(0, trackBottom, w, 2);
 
-    for (const f of this.flowers) {
+    for (const f of flowers) {
       const fx = f.x - cam;
       if (fx < -20 || fx > w + 20) continue;
       const fy = trackTop - 12 + f.y * 6;
@@ -381,20 +368,20 @@ export class RaceEngine {
       ctx.fillRect(startX - 2, trackTop, 2, trackHeight);
     }
 
-    for (const ob of this.obstacles) {
+    for (const ob of obstacles) {
       const ox = ob.x - cam;
       if (ox < -40 || ox > w + 40) continue;
       const oy = trackTop + ob.lane * laneH + laneH * 0.5;
-      this._drawObstacle(ox, oy, ob.kind, ob.hit);
+      drawObstacle(ox, oy, ob.kind, ob.hit);
     }
 
-    for (const r of this.racers) {
+    for (const r of racers) {
       const sx = r.x - cam + 40;
       const sy = trackTop + r.lane * laneH + laneH * 0.4 + Math.sin(r.bob) * 2;
-      this._drawSnail(sx, sy, r, trackBottom + 4);
+      drawSnail(sx, sy, r, trackBottom + 4);
     }
 
-    const lead = Math.max(0, ...this.racers.map((r) => (r.dnf ? 0 : r.x)));
+    const lead = Math.max(0, ...racers.map((r) => (r.dnf ? 0 : r.x)));
     const pct = Math.min(1, lead / TRACK_LENGTH);
     ctx.fillStyle = "#111";
     ctx.fillRect(12, 8, w - 24, 14);
@@ -407,8 +394,7 @@ export class RaceEngine {
     ctx.strokeRect(12, 8, w - 24, 14);
   }
 
-  _drawCloud(x, y, w) {
-    const ctx = this.ctx;
+  function drawCloud(x: number, y: number, w: number): void {
     ctx.fillStyle = "#e8f4ff";
     ctx.fillRect(x, y, w * 0.55, 12);
     ctx.fillRect(x + w * 0.18, y - 10, w * 0.45, 14);
@@ -417,13 +403,8 @@ export class RaceEngine {
     ctx.fillRect(x + 4, y + 2, w * 0.3, 4);
   }
 
-  /**
-   * @param {number} cam
-   * @param {number} trackTop
-   */
-  _drawHills(cam, trackTop) {
-    const ctx = this.ctx;
-    const w = this.canvas.width;
+  function drawHills(cam: number, trackTop: number): void {
+    const w = canvas.width;
     const base = trackTop - 8;
     ctx.fillStyle = "#3d8b4f";
     ctx.beginPath();
@@ -451,17 +432,14 @@ export class RaceEngine {
     ctx.fill();
   }
 
-  /**
-   * Pixel obstacle sprites
-   * @param {number} x
-   * @param {number} y
-   * @param {string} kind
-   * @param {boolean} hit
-   */
-  _drawObstacle(x, y, kind, hit) {
+  function drawObstacle(
+    x: number,
+    y: number,
+    kind: string,
+    hit: boolean,
+  ): void {
     if (hit) {
       // leftover crumbs
-      const ctx = this.ctx;
       ctx.globalAlpha = 0.35;
       ctx.fillStyle = "#fff";
       ctx.fillRect(x - 2, y + 4, 3, 3);
@@ -469,10 +447,9 @@ export class RaceEngine {
       ctx.globalAlpha = 1;
       return;
     }
-    const ctx = this.ctx;
-    const px = (ox, oy, w, h, c) => {
+    const px = (ox: number, oy: number, pw: number, ph: number, c: string) => {
       ctx.fillStyle = c;
-      ctx.fillRect(x + ox, y + oy, w, h);
+      ctx.fillRect(x + ox, y + oy, pw, ph);
     };
 
     if (kind === "salt") {
@@ -523,14 +500,7 @@ export class RaceEngine {
     }
   }
 
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @param {Racer} r
-   * @param {number} [labelY]
-   */
-  _drawSnail(x, y, r, labelY) {
-    const ctx = this.ctx;
+  function drawSnail(x: number, y: number, r: Racer, labelY?: number): void {
     const scale = 1.05;
 
     if (r.dnf) ctx.globalAlpha = 0.4;
@@ -612,8 +582,66 @@ export class RaceEngine {
     ctx.globalAlpha = 1;
   }
 
-  getProgress() {
-    const lead = Math.max(0, ...this.racers.map((r) => (r.dnf ? 0 : r.x)));
+  function start(): void {
+    racers = SNAILS.map((s, i) => {
+      const base = 55 + Math.random() * 35 + (s.id === "zippy" ? 12 : 0);
+      return {
+        id: s.id,
+        name: s.name,
+        color: s.color,
+        body: s.body,
+        shell: s.shell,
+        x: 20 + Math.random() * 8,
+        lane: i,
+        baseSpeed: base,
+        speed: base * (0.85 + Math.random() * 0.3),
+        state: "idle" as SnailState,
+        stateTimer: 0,
+        bob: Math.random() * Math.PI * 2,
+        finished: false,
+        finishTime: null,
+        dnf: false,
+        dnfReason: "",
+        nextEventAt: 3.5 + Math.random() * 4 + i * 0.35,
+      };
+    });
+    cameraX = 0;
+    elapsed = 0;
+    running = true;
+    finished = false;
+    finishAnnounced = new Set();
+    obstacles = makeTrackObstacles();
+    last = performance.now();
+    hooks.onEvent?.("And they're OFF! What a colourful field today!", {
+      kind: "start",
+      sfx: null,
+      priority: 2,
+    });
+    loop();
+  }
+
+  function stop(): void {
+    running = false;
+    cancelAnimationFrame(raf);
+  }
+
+  function getProgress(): number {
+    const lead = Math.max(0, ...racers.map((r) => (r.dnf ? 0 : r.x)));
     return Math.min(100, Math.floor((lead / TRACK_LENGTH) * 100));
   }
+
+  return {
+    start,
+    stop,
+    getProgress,
+    get elapsed() {
+      return elapsed;
+    },
+    get finished() {
+      return finished;
+    },
+    get racers() {
+      return racers;
+    },
+  };
 }

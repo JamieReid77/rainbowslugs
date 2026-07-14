@@ -1,62 +1,49 @@
-import { Commentary } from "./commentary.js";
+import { createCommentary, type CommentaryHandle } from "./commentary";
 import {
   PLAYER_COLORS,
   SNAILS,
   STARTING_BANK,
   payout,
   rollOdds,
-} from "./data.js";
-import { RaceEngine } from "./race.js";
-import { sfx } from "./sfx.js";
+  type Bet,
+  type Player,
+} from "./data";
+import { createRaceEngine, type RaceHandle, type Racer } from "./race";
+import { sfx } from "./sfx";
 
-/** @typedef {import('./data.js').Player} Player */
-/** @typedef {import('./data.js').Bet} Bet */
+/** Boot the imperative game UI inside a root element. */
+export function bootGame(root: ParentNode): () => void {
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => {
+    const el = root.querySelector(`#${id}`);
+    if (!el) throw new Error(`Missing #${id}`);
+    return el as T;
+  };
 
-/**
- * Boot the imperative game UI inside a root element.
- * @param {ParentNode} root
- * @returns {() => void} cleanup
- */
-export function bootGame(root) {
-  const $ = (id) => /** @type {HTMLElement} */ (root.querySelector(`#${id}`));
-
-  /** @type {Player[]} */
-  let players = [];
-  /** @type {Bet[]} */
-  let bets = [];
-  /** @type {Record<string, number>} */
-  let odds = {};
+  let players: Player[] = [];
+  let bets: Bet[] = [];
+  let odds: Record<string, number> = {};
   let bettingIndex = 0;
-  /** @type {RaceEngine | null} */
-  let race = null;
-  /** @type {Commentary | null} */
-  let commentary = null;
-  /** @type {ReturnType<typeof setInterval>[]} */
-  const intervals = [];
-  /** @type {ReturnType<typeof setTimeout>[]} */
-  const timeouts = [];
+  let race: RaceHandle | null = null;
+  let commentary: CommentaryHandle | null = null;
+  const intervals: ReturnType<typeof setInterval>[] = [];
+  const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-  const trackInterval = (id) => {
+  const trackInterval = (id: ReturnType<typeof setInterval>) => {
     intervals.push(id);
     return id;
   };
-  const trackTimeout = (id) => {
+  const trackTimeout = (id: ReturnType<typeof setTimeout>) => {
     timeouts.push(id);
     return id;
   };
 
-  function show(screenId) {
+  const show = (screenId: string) => {
     root.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
     $(screenId).classList.add("active");
-  }
+  };
 
-  function uid() {
-    return Math.random().toString(36).slice(2, 9);
-  }
-
-  function escapeAttr(s) {
-    return s.replace(/"/g, "&quot;");
-  }
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const escapeAttr = (s: string) => s.replace(/"/g, "&quot;");
 
   const onPointerDown = () => sfx.unlock();
   document.addEventListener("pointerdown", onPointerDown, { once: true });
@@ -90,7 +77,7 @@ export function bootGame(root) {
   };
   $("btn-start").addEventListener("click", onStart);
 
-  function renderLobby() {
+  const renderLobby = () => {
     const list = $("lobby-list");
     list.innerHTML = "";
     players.forEach((p, i) => {
@@ -107,7 +94,7 @@ export function bootGame(root) {
 
     list.querySelectorAll("input").forEach((input) => {
       input.addEventListener("change", (e) => {
-        const t = /** @type {HTMLInputElement} */ (e.target);
+        const t = e.target as HTMLInputElement;
         const i = Number(t.dataset.i);
         players[i].name = t.value.trim().toUpperCase() || `PLAYER ${i + 1}`;
       });
@@ -116,18 +103,16 @@ export function bootGame(root) {
     list.querySelectorAll("[data-remove]").forEach((btn) => {
       btn.addEventListener("click", () => {
         sfx.click();
-        const i = Number(/** @type {HTMLElement} */ (btn).dataset.remove);
+        const i = Number((btn as HTMLElement).dataset.remove);
         if (players.length <= 2) return;
         players.splice(i, 1);
         renderLobby();
       });
     });
 
-    /** @type {HTMLButtonElement} */ ($("btn-to-betting")).disabled =
-      players.length < 2;
-    /** @type {HTMLButtonElement} */ ($("btn-add-player")).disabled =
-      players.length >= 6;
-  }
+    $<HTMLButtonElement>("btn-to-betting").disabled = players.length < 2;
+    $<HTMLButtonElement>("btn-add-player").disabled = players.length >= 6;
+  };
 
   const onAddPlayer = () => {
     sfx.click();
@@ -148,7 +133,7 @@ export function bootGame(root) {
     $("lobby-list")
       .querySelectorAll("input")
       .forEach((input) => {
-        const t = /** @type {HTMLInputElement} */ (input);
+        const t = input as HTMLInputElement;
         const i = Number(t.dataset.i);
         players[i].name = t.value.trim().toUpperCase() || `PLAYER ${i + 1}`;
       });
@@ -167,7 +152,7 @@ export function bootGame(root) {
   };
   $("btn-to-betting").addEventListener("click", onToBetting);
 
-  function renderBetting() {
+  const renderBetting = () => {
     const solvent = players.filter((p) => p.bank > 0);
     if (bettingIndex >= solvent.length) {
       startRace();
@@ -180,8 +165,7 @@ export function bootGame(root) {
     $("bet-player-name").style.color = player.color;
     $("bet-bank").textContent = `Shells: ${player.bank}`;
 
-    const oddsEl = $("snail-odds");
-    oddsEl.innerHTML = SNAILS.map(
+    $("snail-odds").innerHTML = SNAILS.map(
       (s) => `
     <div class="odds-card">
       <div class="dot" style="background:${s.color}"></div>
@@ -194,13 +178,12 @@ export function bootGame(root) {
   `,
     ).join("");
 
-    const select = /** @type {HTMLSelectElement} */ ($("bet-snail"));
-    select.innerHTML = SNAILS.map(
+    $<HTMLSelectElement>("bet-snail").innerHTML = SNAILS.map(
       (s) =>
         `<option value="${s.id}">${s.name} (${odds[s.id].toFixed(1)}x)</option>`,
     ).join("");
 
-    const amount = /** @type {HTMLInputElement} */ ($("bet-amount"));
+    const amount = $<HTMLInputElement>("bet-amount");
     amount.max = String(player.bank);
     amount.value = String(Math.min(10, player.bank));
 
@@ -214,18 +197,17 @@ export function bootGame(root) {
 
     $("bet-hint").textContent =
       "Winner pays odds. DNF never pays — even if it's George.";
-  }
+  };
 
-  /** @type {((e: Event) => void)[]} */
-  const chipHandlers = [];
+  const chipHandlers: Array<() => void> = [];
   root.querySelectorAll(".chip").forEach((btn) => {
     const handler = () => {
       sfx.click();
       const solvent = players.filter((p) => p.bank > 0);
       const player = solvent[bettingIndex];
       if (!player) return;
-      const amt = /** @type {HTMLElement} */ (btn).dataset.amt;
-      const input = /** @type {HTMLInputElement} */ ($("bet-amount"));
+      const amt = (btn as HTMLElement).dataset.amt;
+      const input = $<HTMLInputElement>("bet-amount");
       if (amt === "all") input.value = String(player.bank);
       else input.value = String(Math.min(player.bank, Number(amt)));
     };
@@ -238,10 +220,8 @@ export function bootGame(root) {
     const player = solvent[bettingIndex];
     if (!player) return;
 
-    const snailId = /** @type {HTMLSelectElement} */ ($("bet-snail")).value;
-    let amount = Math.floor(
-      Number(/** @type {HTMLInputElement} */ ($("bet-amount")).value),
-    );
+    const snailId = $<HTMLSelectElement>("bet-snail").value;
+    let amount = Math.floor(Number($<HTMLInputElement>("bet-amount").value));
     if (!Number.isFinite(amount) || amount < 1) {
       alert("Bet at least 1 shell.");
       return;
@@ -256,9 +236,66 @@ export function bootGame(root) {
   };
   $("btn-lock-bet").addEventListener("click", onLockBet);
 
-  function startRace() {
+  const settleBets = (results: Racer[]) => {
+    const winner = results.find((r) => r.finished);
+    for (const bet of bets) {
+      const player = players.find((p) => p.id === bet.playerId);
+      if (!player) continue;
+      if (winner && bet.snailId === winner.id) {
+        player.bank += payout(bet.amount, odds[bet.snailId]);
+      }
+    }
+  };
+
+  const showResults = (results: Racer[]) => {
+    show("screen-results");
+    const winner = results.find((r) => r.finished);
+    $("winner-banner").textContent = winner
+      ? `🏆 ${winner.name} WINS THE RAINBOW CUP!`
+      : "Everyone DNFed. Chaos in the garden.";
+
+    $("podium").innerHTML =
+      `<h3>FINISH ORDER</h3>` +
+      results
+        .map((r, i) => {
+          if (r.dnf) {
+            return `<div class="finish-row"><span>${r.name}</span><span class="dnf">DNF — ${r.dnfReason}</span></div>`;
+          }
+          const place =
+            ["1st", "2nd", "3rd", "4th", "5th", "6th"][i] || `${i + 1}th`;
+          return `<div class="finish-row"><span>${place} · ${r.name}</span><span>${(r.finishTime ?? 0).toFixed(1)}s</span></div>`;
+        })
+        .join("");
+
+    const winnerId = winner?.id;
+    $("payouts").innerHTML =
+      `<h3>PAYOUTS</h3>` +
+      (bets.length
+        ? bets
+            .map((b) => {
+              const pl = players.find((p) => p.id === b.playerId);
+              const sn = SNAILS.find((s) => s.id === b.snailId);
+              const won = winnerId && b.snailId === winnerId;
+              const pay = won ? payout(b.amount, odds[b.snailId]) : 0;
+              return `<div class="pay-row"><span>${pl?.name} on ${sn?.name}</span><span class="${won ? "win" : "lose"}">${won ? `+${pay}` : `-${b.amount}`}</span></div>`;
+            })
+            .join("")
+        : `<div class="pay-row"><span>No bets</span><span>—</span></div>`);
+
+    const ranked = [...players].sort((a, b) => b.bank - a.bank);
+    $("standings").innerHTML =
+      `<h3>SHELL STANDINGS</h3>` +
+      ranked
+        .map(
+          (p, i) =>
+            `<div class="stand-row"><span style="color:${p.color}">#${i + 1} ${p.name}</span><span class="gold">${p.bank} 🐚</span></div>`,
+        )
+        .join("");
+  };
+
+  const startRace = () => {
     show("screen-race");
-    const canvas = /** @type {HTMLCanvasElement} */ ($("race-canvas"));
+    const canvas = $<HTMLCanvasElement>("race-canvas");
     const cssW = canvas.clientWidth || 960;
     const cssH = Math.round(cssW * (480 / 960));
     canvas.width = 960;
@@ -271,11 +308,9 @@ export function bootGame(root) {
     ).join("");
 
     commentary?.clear();
-    commentary = new Commentary($("hud-event"), {
+    commentary = createCommentary($("hud-event"), {
       onShow(_msg, meta) {
-        if (meta && typeof meta === "object" && "sfx" in meta) {
-          sfx.play(/** @type {{ sfx?: string }} */ (meta).sfx);
-        }
+        if (meta?.sfx) sfx.play(meta.sfx);
       },
     });
 
@@ -283,7 +318,7 @@ export function bootGame(root) {
     $("hud-time").textContent = "0.0s";
 
     race?.stop();
-    race = new RaceEngine(canvas, {
+    race = createRaceEngine(canvas, {
       onEvent(msg, meta = {}) {
         const hold =
           meta.kind === "dnf" || meta.kind === "finish"
@@ -334,70 +369,7 @@ export function bootGame(root) {
         }
       }, 1000),
     );
-  }
-
-  /**
-   * @param {import('./race.js').RaceEngine['racers']} results
-   */
-  function settleBets(results) {
-    const winner = results.find((r) => r.finished);
-    for (const bet of bets) {
-      const player = players.find((p) => p.id === bet.playerId);
-      if (!player) continue;
-      if (winner && bet.snailId === winner.id) {
-        player.bank += payout(bet.amount, odds[bet.snailId]);
-      }
-    }
-  }
-
-  /**
-   * @param {import('./race.js').RaceEngine['racers']} results
-   */
-  function showResults(results) {
-    show("screen-results");
-    const winner = results.find((r) => r.finished);
-    $("winner-banner").textContent = winner
-      ? `🏆 ${winner.name} WINS THE RAINBOW CUP!`
-      : "Everyone DNFed. Chaos in the garden.";
-
-    $("podium").innerHTML =
-      `<h3>FINISH ORDER</h3>` +
-      results
-        .map((r, i) => {
-          if (r.dnf) {
-            return `<div class="finish-row"><span>${r.name}</span><span class="dnf">DNF — ${r.dnfReason}</span></div>`;
-          }
-          const place =
-            ["1st", "2nd", "3rd", "4th", "5th", "6th"][i] || `${i + 1}th`;
-          return `<div class="finish-row"><span>${place} · ${r.name}</span><span>${(r.finishTime ?? 0).toFixed(1)}s</span></div>`;
-        })
-        .join("");
-
-    const winnerId = winner?.id;
-    $("payouts").innerHTML =
-      `<h3>PAYOUTS</h3>` +
-      (bets.length
-        ? bets
-            .map((b) => {
-              const pl = players.find((p) => p.id === b.playerId);
-              const sn = SNAILS.find((s) => s.id === b.snailId);
-              const won = winnerId && b.snailId === winnerId;
-              const pay = won ? payout(b.amount, odds[b.snailId]) : 0;
-              return `<div class="pay-row"><span>${pl?.name} on ${sn?.name}</span><span class="${won ? "win" : "lose"}">${won ? `+${pay}` : `-${b.amount}`}</span></div>`;
-            })
-            .join("")
-        : `<div class="pay-row"><span>No bets</span><span>—</span></div>`);
-
-    const ranked = [...players].sort((a, b) => b.bank - a.bank);
-    $("standings").innerHTML =
-      `<h3>SHELL STANDINGS</h3>` +
-      ranked
-        .map(
-          (p, i) =>
-            `<div class="stand-row"><span style="color:${p.color}">#${i + 1} ${p.name}</span><span class="gold">${p.bank} 🐚</span></div>`,
-        )
-        .join("");
-  }
+  };
 
   const onRematch = () => {
     sfx.click();
@@ -436,7 +408,8 @@ export function bootGame(root) {
     $("btn-rematch").removeEventListener("click", onRematch);
     $("btn-new-game").removeEventListener("click", onNewGame);
     root.querySelectorAll(".chip").forEach((btn, i) => {
-      if (chipHandlers[i]) btn.removeEventListener("click", chipHandlers[i]);
+      const handler = chipHandlers[i];
+      if (handler) btn.removeEventListener("click", handler);
     });
   };
 }

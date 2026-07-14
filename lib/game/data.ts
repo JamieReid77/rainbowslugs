@@ -1,7 +1,59 @@
-/** @typedef {{ id: string, name: string, color: string, body: string, shell: string, personality: string, baseOdds: number }} Snail */
-/** @typedef {{ id: string, name: string, color: string, bank: number }} Player */
-/** @typedef {{ playerId: string, snailId: string, amount: number }} Bet */
-/** @typedef {'idle'|'boost'|'slow'|'stuck'|'napping'|'dnf'} SnailState */
+export type SnailState =
+  | "idle"
+  | "boost"
+  | "slow"
+  | "stuck"
+  | "napping"
+  | "dnf";
+
+export type Snail = {
+  id: string;
+  name: string;
+  color: string;
+  body: string;
+  shell: string;
+  personality: string;
+  baseOdds: number;
+};
+
+export type Player = {
+  id: string;
+  name: string;
+  color: string;
+  bank: number;
+};
+
+export type Bet = {
+  playerId: string;
+  snailId: string;
+  amount: number;
+};
+
+/** Mutable racer state used by obstacle apply + race loop */
+export type ObstacleRacer = {
+  id: string;
+  name: string;
+  x: number;
+  speed: number;
+  state: SnailState;
+  stateTimer: number;
+  finished: boolean;
+  dnf: boolean;
+  dnfReason: string;
+};
+
+export type ObstacleResult = {
+  message: string;
+  kind: string;
+  sfx: string | null;
+};
+
+export type ObstacleType = {
+  id: string;
+  label: string;
+  chance: number;
+  apply: (racer: ObstacleRacer) => ObstacleResult;
+};
 
 export const STARTING_BANK = 100;
 export const TRACK_LENGTH = 2400;
@@ -12,11 +64,9 @@ export const PLAYER_COLORS = [
   "#ffd24a",
   "#b388ff",
   "#ff9f43",
-];
+] as const;
 
-/** Rainbow (UK kids TV) cast as racing snails */
-/** @type {Snail[]} */
-export const SNAILS = [
+export const SNAILS: Snail[] = [
   {
     id: "zippy",
     name: "ZIPPY",
@@ -73,7 +123,7 @@ export const SNAILS = [
   },
 ];
 
-export const OBSTACLE_TYPES = [
+export const OBSTACLE_TYPES: ObstacleType[] = [
   {
     id: "salt",
     label: "SALT PATCH!",
@@ -239,13 +289,8 @@ export const OBSTACLE_TYPES = [
   },
 ];
 
-/**
- * @param {Snail[]} snails
- * @returns {Record<string, number>}
- */
-export function rollOdds(snails) {
-  /** @type {Record<string, number>} */
-  const odds = {};
+export function rollOdds(snails: Snail[]): Record<string, number> {
+  const odds: Record<string, number> = {};
   for (const s of snails) {
     const jitter = 0.7 + Math.random() * 0.9;
     odds[s.id] = Math.round(s.baseOdds * jitter * 10) / 10;
@@ -253,10 +298,6 @@ export function rollOdds(snails) {
   return odds;
 }
 
-/**
- * @param {number} amount
- * @param {number} odds
- */
-export function payout(amount, odds) {
+export function payout(amount: number, odds: number): number {
   return Math.floor(amount * odds);
 }

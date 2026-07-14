@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { bootGame } from "@/lib/game/main.js";
+import { bootGame } from "@/lib/game/main";
 
 export default function Game() {
   const rootRef = useRef<HTMLDivElement>(null);
