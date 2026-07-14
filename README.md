@@ -2,7 +2,9 @@
 
 Local multiplayer snail-race betting game in a chunky 8-bit horizontal-scrolling style.
 
-## Play
+**Play online:** [https://rainbowslugs.vercel.app](https://rainbowslugs.vercel.app)
+
+## Play locally
 
 Open `index.html` in a browser, or from this folder:
 
