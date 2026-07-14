@@ -1,0 +1,12 @@
+{
+  "startingBank": 100,
+  "trackLength": 2400,
+  "playerColors": [
+    "#ff6b9d",
+    "#4ef0d2",
+    "#9dff57",
+    "#ffd24a",
+    "#b388ff",
+    "#ff9f43"
+  ]
+}

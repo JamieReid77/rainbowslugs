@@ -1,0 +1,56 @@
+[
+  {
+    "id": "zippy",
+    "name": "ZIPPY",
+    "color": "#ff9f43",
+    "body": "#ffb347",
+    "shell": "#e85d04",
+    "personality": "Loud zip-mouth sprinter",
+    "baseOdds": 2.8
+  },
+  {
+    "id": "george",
+    "name": "GEORGE",
+    "color": "#ff8fab",
+    "body": "#ffb3c6",
+    "shell": "#c9184a",
+    "personality": "Gentle — loves a mid-race nap",
+    "baseOdds": 4.2
+  },
+  {
+    "id": "bungle",
+    "name": "BUNGLE",
+    "color": "#d4a373",
+    "body": "#e6b98a",
+    "shell": "#8b5a2b",
+    "personality": "Clumsy bear who eats salt",
+    "baseOdds": 3.6
+  },
+  {
+    "id": "geoffrey",
+    "name": "GEOFFREY",
+    "color": "#4ef0d2",
+    "body": "#7dfff0",
+    "shell": "#0077b6",
+    "personality": "Steady rainbow host",
+    "baseOdds": 3.2
+  },
+  {
+    "id": "jane",
+    "name": "JANE",
+    "color": "#9dff57",
+    "body": "#b8ff7a",
+    "shell": "#2d6a4f",
+    "personality": "Song-&-dance speedster",
+    "baseOdds": 3.5
+  },
+  {
+    "id": "freddy",
+    "name": "FREDDY",
+    "color": "#b388ff",
+    "body": "#d0b3ff",
+    "shell": "#5a189a",
+    "personality": "Glitchy underdog",
+    "baseOdds": 5.5
+  }
+]

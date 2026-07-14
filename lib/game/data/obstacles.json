@@ -1,0 +1,37 @@
+[
+  {
+    "id": "salt",
+    "label": "SALT PATCH!",
+    "chance": 0.22
+  },
+  {
+    "id": "bird",
+    "label": "HUNGRY BIRD!",
+    "chance": 0.1
+  },
+  {
+    "id": "nap",
+    "label": "NAP ATTACK!",
+    "chance": 0.18
+  },
+  {
+    "id": "mud",
+    "label": "MUD BOG!",
+    "chance": 0.2
+  },
+  {
+    "id": "lettuce",
+    "label": "TURBO LETTUCE!",
+    "chance": 0.16
+  },
+  {
+    "id": "shellcrack",
+    "label": "SHELL JAM!",
+    "chance": 0.1
+  },
+  {
+    "id": "wrongway",
+    "label": "WRONG WAY!",
+    "chance": 0.08
+  }
+]

@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+build
+coverage
+public/audio/*.mp3
+*.tsbuildinfo
+next-env.d.ts
+package-lock.json

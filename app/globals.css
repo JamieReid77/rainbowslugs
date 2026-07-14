@@ -46,8 +46,12 @@ body {
   align-items: safe center;
   justify-content: safe center;
   overflow-y: auto;
-  background:
-    radial-gradient(ellipse at 50% 20%, #2a2a66 0%, var(--bg) 50%, #08081a 100%);
+  background: radial-gradient(
+    ellipse at 50% 20%,
+    #2a2a66 0%,
+    var(--bg) 50%,
+    #08081a 100%
+  );
 }
 
 .scanlines {
@@ -191,7 +195,7 @@ body {
 }
 
 .pixel-snail::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 4px;
   bottom: 0;
@@ -203,7 +207,7 @@ body {
 }
 
 .pixel-snail::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 10px;
   bottom: 8px;
@@ -249,7 +253,9 @@ body {
   color: var(--text);
   cursor: pointer;
   box-shadow: 4px 4px 0 #000;
-  transition: transform 0.08s, box-shadow 0.08s;
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
 }
 
 .btn:hover:not(:disabled) {
