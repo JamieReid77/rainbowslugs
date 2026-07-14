@@ -1,6 +1,20 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "slugarena.vercel.app" }],
+      "destination": "https://rainbowslugs.vercel.app/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "slugarena-taydigital.vercel.app" }],
+      "destination": "https://rainbowslugs.vercel.app/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

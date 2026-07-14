@@ -1,32 +1,23 @@
 # RAINBOWSLUGS — Amiga Snail Race
 
-Local multiplayer snail-race betting game in a chunky 8-bit horizontal-scrolling style.
+Local multiplayer snail-race betting game in a chunky 8-bit / 90s Amiga style.
 
 **Play online:** [https://rainbowslugs.vercel.app](https://rainbowslugs.vercel.app)
 
 ## Play locally
 
-Open `index.html` in a browser, or from this folder:
-
 ```bash
-npm start
+npm install
+npm run dev
 ```
 
-Then visit the URL shown (usually `http://localhost:5173`).
+Then open [http://localhost:3000](http://localhost:3000).
 
-### Deploy to Vercel
+## Stack
 
-```bash
-npx vercel
-```
+Next.js App Router + React client game shell, Canvas race engine, Web Audio SFX.
 
-For production:
-
-```bash
-npx vercel --prod
-```
-
-Or import the GitHub repo in the [Vercel dashboard](https://vercel.com/new) — no build command needed (static files).
+Race BGM is the real **William Tell Overture** finale (U.S. Marine Band recording — public domain). See `public/audio/CREDITS.txt`.
 
 ## How it works
 
@@ -39,19 +30,20 @@ Or import the GitHub repo in the [Vercel dashboard](https://vercel.com/new) — 
 
 Snails can fail to finish — those bets never pay:
 
-- **Salt patch** — slows hard (Crunch sometimes eats through it)
+- **Salt patch** — slows hard (Bungle sometimes eats through it)
 - **Hungry bird** — may carry a snail away (DNF)
-- **Nap attack** — mid-race snooze (Velvet loves this)
+- **Nap attack** — mid-race snooze (George loves this)
 - **Mud bog** — sticky slowdown
 - **Turbo lettuce** — temporary boost
 - **Shell jam** — stuck, or cracked shell (DNF)
 - **Wrong way** — reverse slime / wander off (DNF)
 - **Time cut** — stragglers DNF after the leader finishes
 
-## Stack
+## Deploy
 
-Pure HTML / CSS / Canvas JS — no build step required.
+Pushes to `main` on GitHub deploy via Vercel (project linked to this repo).
 
-Chip-style SFX use the Web Audio API (toggle with **SFX: ON**).
-
-Race BGM is the real **William Tell Overture** finale (U.S. Marine Band recording — public domain). See `audio/CREDITS.txt`.
+```bash
+npm run build
+npx vercel --prod
+```
